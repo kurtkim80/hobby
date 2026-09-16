@@ -19,7 +19,7 @@
             <option value="90">📅 최근 3개월</option>
             <option value="365">📅 최근 1년</option>
         </select>
-        <button class="btn-collect" @onclick="ReloadLatestData" title="깃허브 최신 수집 데이터로 동기화">
+        <button class="btn-collect btn-sync" @onclick="ReloadLatestData" title="깃허브 최신 수집 데이터로 동기화">
             <span>🔄 최신 데이터 동기화</span>
         </button>
         <button class="btn-collect" @onclick="TriggerMassCollect" disabled="@isCollecting">
@@ -76,7 +76,7 @@
                     <button class="btn-clear" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.1rem;padding:0 0.5rem;" @onclick="ClearSearch">✕</button>
                 }
             </div>
-            <button class="btn-collect" style="background: #2563eb;" @onclick="ExecuteSearch">
+            <button class="btn-collect btn-search" @onclick="ExecuteSearch">
                 <span>🔍 검색</span>
             </button>
             <button class="btn-collect btn-kw-collect" @onclick="TriggerKeywordCollect" disabled="@isCollecting">
@@ -161,7 +161,7 @@
                         <div class="video-title" title="@item.Video.Title">@item.Video.Title</div>
                         <div class="card-footer">
                             <span>📅 @item.Video.PublishedAt.ToString("yyyy-MM-dd")</span>
-                            <span style="color: #38bdf8; font-weight: 600;">유튜브 재생 ↗</span>
+                            <span class="play-link">유튜브 재생 ↗</span>
                         </div>
                     </div>
                 </a>
