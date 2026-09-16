@@ -1,0 +1,326 @@
+@page "/"
+@inject WasmVectorStore VectorStore
+@inject WasmCollectorService Collector
+@inject IJSRuntime JS
+
+<PageTitle>HobbyCollector | AI 취미 & 트렌드 허브 (WASM)</PageTitle>
+
+<!-- Header -->
+<header>
+    <div class="logo-container">
+        <span class="logo-icon">🎸</span>
+        <span class="logo-title">HobbyCollector</span>
+        <span class="badge-wasm">WASM</span>
+    </div>
+    <div class="header-actions">
+        <select class="days-select" @bind="selectedDays" title="수집 기간 선택">
+            <option value="7">📅 최근 1주일</option>
+            <option value="30">📅 최근 1개월</option>
+            <option value="90">📅 최근 3개월</option>
+            <option value="365">📅 최근 1년</option>
+        </select>
+        <button class="btn-collect" @onclick="TriggerMassCollect" disabled="@isCollecting">
+            @if (isCollecting)
+            {
+                <div class="spinner" style="width: 1rem; height: 1rem;"></div>
+                <span>수집 중...</span>
+            }
+            else
+            {
+                <span>🚀 종합 대량 수집</span>
+            }
+        </button>
+    </div>
+</header>
+
+<!-- Trending Bar -->
+<div class="trending-bar">
+    <div class="trending-label">🔥 실시간 급상승</div>
+    <div class="trend-chips">
+        @if (trendingTopics.Count == 0)
+        {
+            <span class="trend-chip">트렌드 로딩 중...</span>
+        }
+        else
+        {
+            @foreach (var t in trendingTopics)
+            {
+                <div class="trend-chip @(t.IsMatchedHobby ? "matched" : "")" @onclick="() => SearchKeyword(t.Title)">
+                    @(t.IsMatchedHobby ? "🔥 " : "")#@t.Title
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- Main Content -->
+<main>
+    <section class="controls-section">
+        <!-- Search Box with Keyword Collect Button -->
+        <div class="search-container">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    placeholder="자연어 시맨틱 AI 검색 (예: 스티브 바이 기타 솔로, 유재석 땡처리, M4 맥, ASL 결승, 홍구, 홍인규)" 
+                    @bind="searchQuery" 
+                    @bind:event="oninput"
+                    @onkeydown="HandleKeyDown"
+                />
+            </div>
+            <button class="btn-collect btn-kw-collect" @onclick="TriggerKeywordCollect" disabled="@isCollecting">
+                <span>⚡ 이 키워드로 즉시 수집</span>
+            </button>
+        </div>
+
+        <!-- User Keywords Bar -->
+        <div class="user-keywords-bar">
+            <span class="user-kw-title">
+                ⭐ 내 관심 키워드 <span class="user-kw-subtitle">(종합 수집 시 자동 연동)</span>:
+            </span>
+            <div class="user-kw-chips">
+                @if (userKeywords.Count == 0)
+                {
+                    <span style="color: #64748b; font-size: 0.8rem;">검색하면 여기에 자동 저장됩니다</span>
+                }
+                else
+                {
+                    @foreach (var k in userKeywords)
+                    {
+                        <span class="trend-chip user-chip">
+                            <span class="chip-text" @onclick="() => SearchKeyword(k.Keyword)">#@k.Keyword</span>
+                            <span class="chip-del" title="삭제" @onclick="() => DeleteKeyword(k.Keyword)">✕</span>
+                        </span>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Category Filter Tabs -->
+        <div class="category-tabs">
+            <button class="tab-btn @(selectedCategory == null ? "active" : "")" @onclick="@(() => SelectCategory(null))">전체</button>
+            <button class="tab-btn @(selectedCategory == CatGuitar ? "active" : "")" @onclick="@(() => SelectCategory(CatGuitar))">🎸 기타 & 락/메탈</button>
+            <button class="tab-btn @(selectedCategory == CatTech ? "active" : "")" @onclick="@(() => SelectCategory(CatTech))">🍎 Mac & 테크</button>
+            <button class="tab-btn @(selectedCategory == CatStar ? "active" : "")" @onclick="@(() => SelectCategory(CatStar))">🎮 스타크래프트</button>
+            <button class="tab-btn @(selectedCategory == CatTv ? "active" : "")" @onclick="@(() => SelectCategory(CatTv))">📺 TV 예능</button>
+            <button class="tab-btn @(selectedCategory == CatAi ? "active" : "")" @onclick="@(() => SelectCategory(CatAi))">🤖 AI & 로봇</button>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <span class="stat-badge">📦 총 보관 콘텐츠: @totalVideoCount 개</span>
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <span class="status-msg">@statusMessage</span>
+            }
+        </div>
+    </section>
+
+    <!-- Video Grid -->
+    <section class="video-grid">
+        @if (isLoading)
+        {
+            <div class="empty-state">
+                <div class="spinner"></div>
+                <p style="margin-top: 1rem;">로컬 벡터 데이터를 분석하고 있습니다...</p>
+            </div>
+        }
+        else if (displayVideos.Count == 0)
+        {
+            <div class="empty-state">
+                <p style="font-size: 1.2rem;">검색 결과가 없습니다.</p>
+                <p style="margin-top: 0.5rem;">[⚡ 이 키워드로 즉시 수집]을 눌러 유튜브에서 가져와 보세요!</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in displayVideos)
+            {
+                <a href="@item.Video.Url" target="_blank" class="video-card">
+                    <div class="thumbnail-wrapper">
+                        <img class="thumbnail-img" src="@item.Video.ThumbnailUrl" alt="@item.Video.Title" loading="lazy" onerror="this.src='https://via.placeholder.com/320x180/1e293b/ffffff?text=Video'" />
+                        <div class="category-badge">@item.Video.Category</div>
+                        @if (item.Similarity > 0)
+                        {
+                            <div class="similarity-badge">🎯 유사도 @((item.Similarity * 100).ToString("F1"))%</div>
+                        }
+                    </div>
+                    <div class="card-body">
+                        <div class="channel-name">@item.Video.ChannelTitle</div>
+                        <div class="video-title" title="@item.Video.Title">@item.Video.Title</div>
+                        <div class="card-footer">
+                            <span>📅 @item.Video.PublishedAt.ToString("yyyy-MM-dd")</span>
+                            <span style="color: #38bdf8; font-weight: 600;">유튜브 재생 ↗</span>
+                        </div>
+                    </div>
+                </a>
+            }
+        }
+    </section>
+</main>
+
+@code {
+    private string searchQuery = "";
+    private string? selectedCategory = null;
+    private int selectedDays = 30;
+    private bool isLoading = true;
+    private bool isCollecting = false;
+    private int totalVideoCount = 0;
+    private string statusMessage = "";
+
+    private const string CatGuitar = "🎸 기타 & 락/메탈";
+    private const string CatTech = "🍎 Mac & 테크";
+    private const string CatStar = "🎮 스타크래프트";
+    private const string CatTv = "📺 TV 예능 & 코미디";
+    private const string CatAi = "🤖 AI & 로봇";
+
+    private List<TrendingTopic> trendingTopics = [];
+    private List<UserKeywordItem> userKeywords = [];
+    private List<(VideoItem Video, float Similarity)> displayVideos = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await VectorStore.InitializeAsync();
+        await LoadDataAsync();
+        _ = LoadTrendsAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        isLoading = true;
+        userKeywords = await VectorStore.GetUserKeywordsAsync();
+        var stats = await VectorStore.GetStatisticsAsync();
+        totalVideoCount = stats.Values.Sum();
+
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var raw = await VectorStore.GetRecentVideosAsync(limit: 60, category: selectedCategory);
+            displayVideos = raw.Select(v => (v, 0f)).ToList();
+            statusMessage = "";
+        }
+        else
+        {
+            var searchResults = await VectorStore.SearchAsync(searchQuery, topK: 30, categoryFilter: selectedCategory);
+            displayVideos = searchResults.Select(r => (r.Video, r.Similarity)).ToList();
+            statusMessage = $"🔍 \"{searchQuery}\" 시맨틱 AI 검색 결과: {displayVideos.Count}개";
+        }
+        isLoading = false;
+    }
+
+    private async Task LoadTrendsAsync()
+    {
+        var kws = new[] { "스타", "홍구", "홍인규", "놀면 뭐하니", "M4", "맥", "기타", "로봇", "AI" };
+        trendingTopics = await Collector.FetchTrendingTopicsAsync(kws);
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                await VectorStore.SaveUserKeywordAsync(searchQuery, selectedCategory);
+                userKeywords = await VectorStore.GetUserKeywordsAsync();
+            }
+            await LoadDataAsync();
+        }
+    }
+
+    private async Task SearchKeyword(string keyword)
+    {
+        searchQuery = keyword;
+        await VectorStore.SaveUserKeywordAsync(keyword, selectedCategory);
+        userKeywords = await VectorStore.GetUserKeywordsAsync();
+        await LoadDataAsync();
+    }
+
+    private async Task DeleteKeyword(string keyword)
+    {
+        await VectorStore.DeleteUserKeywordAsync(keyword);
+        userKeywords = await VectorStore.GetUserKeywordsAsync();
+    }
+
+    private async Task SelectCategory(string? category)
+    {
+        selectedCategory = category;
+        await LoadDataAsync();
+    }
+
+    private async Task TriggerKeywordCollect()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            await JS.InvokeVoidAsync("alert", "수집할 키워드를 검색창에 입력해주세요! (예: 스티브 바이, 홍구, 핑계고)");
+            return;
+        }
+
+        isCollecting = true;
+        try
+        {
+            string cat = selectedCategory ?? "🎸 기타 & 락/메탈";
+            await VectorStore.SaveUserKeywordAsync(searchQuery, cat);
+            userKeywords = await VectorStore.GetUserKeywordsAsync();
+
+            var fetched = await Collector.SearchYouTubeVideosAsync(searchQuery, cat, limit: 15);
+            int saved = await VectorStore.SaveVideosAsync(fetched);
+            await JS.InvokeVoidAsync("alert", $"⚡ 키워드 수집 완료: \"{searchQuery}\" 관련 {saved}개 영상이 로컬 벡터 DB에 추가되었습니다!");
+            await LoadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"수집 실패: {ex.Message}");
+        }
+        finally
+        {
+            isCollecting = false;
+        }
+    }
+
+    private async Task TriggerMassCollect()
+    {
+        isCollecting = true;
+        try
+        {
+            var targetKeywords = new List<(string Query, string Cat)>
+            {
+                ("스티브 바이 기타 솔로", "🎸 기타 & 락/메탈"),
+                ("마일스 케네디 어쿠스틱", "🎸 기타 & 락/메탈"),
+                ("M4 맥미니 리뷰", "🍎 Mac & 테크"),
+                ("ASL 결승전 이영호", "🎮 스타크래프트"),
+                ("액션홍구 스타크래프트", "🎮 스타크래프트"),
+                ("홍인규 게임TV 스타", "📺 TV 예능 & 코미디"),
+                ("놀면 뭐하니 유재석", "📺 TV 예능 & 코미디"),
+                ("보스턴 다이내믹스 로봇", "🤖 AI & 로봇")
+            };
+
+            foreach (var uk in userKeywords.Take(5))
+            {
+                if (!targetKeywords.Any(t => t.Query == uk.Keyword))
+                {
+                    targetKeywords.Add((uk.Keyword, !string.IsNullOrEmpty(uk.Category) ? uk.Category : "🎸 기타 & 락/메탈"));
+                }
+            }
+
+            int totalAdded = 0;
+            foreach (var (q, cat) in targetKeywords)
+            {
+                var videos = await Collector.SearchYouTubeVideosAsync(q, cat, limit: 10);
+                int added = await VectorStore.SaveVideosAsync(videos);
+                totalAdded += added;
+            }
+
+            await JS.InvokeVoidAsync("alert", $"🚀 종합 대량 수집 완료: 신규 콘텐츠 {totalAdded}개가 로컬 벡터 DB에 저장되었습니다!");
+            await LoadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"대량 수집 실패: {ex.Message}");
+        }
+        finally
+        {
+            isCollecting = false;
+        }
+    }
+}

@@ -1,0 +1,21 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+release/
+dist/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.DS_Store
+
+# Visual Studio / VS Code
+.vscode/
+.idea/
+*.swp
+
+# Dotnet CLI cache
+Library/

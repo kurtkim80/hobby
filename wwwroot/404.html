@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HobbyCollector | AI 취미 허브 (WASM)</title>
+    <script>
+        const path = window.location.pathname;
+        const segment = path.startsWith('/hobby') ? '/hobby/' : '/';
+        document.write(`<base href="${segment}" />`);
+    </script>
+</head>
+<body>
+    <div id="app">
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#0f172a; color:#f8fafc; gap:1rem;">
+            <p>🎸 페이지를 불러오는 중입니다...</p>
+        </div>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>
