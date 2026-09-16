@@ -562,14 +562,85 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .loading-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            color: var(--text-main);
-            gap: 1.5rem;
+        /* ── 반응형 미디어 쿼리 (Responsive Breakpoints) ── */
+        @media (max-width: 1024px) {
+            main { padding: 1.5rem; gap: 1.5rem; }
+            .video-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 0.75rem 1rem;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            .logo-container { justify-content: center; }
+            .header-actions {
+                justify-content: space-between;
+                width: 100%;
+                gap: 0.5rem;
+            }
+            .header-actions .btn-collect {
+                flex: 1;
+                justify-content: center;
+                font-size: 0.78rem;
+                padding: 0.5rem 0.6rem;
+            }
+            .days-select {
+                font-size: 0.78rem;
+                padding: 0.5rem 0.6rem;
+            }
+
+            .trending-bar {
+                padding: 0.5rem 1rem;
+                gap: 0.6rem;
+            }
+
+            main {
+                padding: 1rem;
+                gap: 1.25rem;
+            }
+
+            .search-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .search-box { width: 100%; }
+            .search-input {
+                padding: 0.85rem 2.4rem 0.85rem 2.75rem;
+                font-size: 0.95rem;
+            }
+            .search-container .btn-collect {
+                width: 100%;
+                justify-content: center;
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .category-tabs {
+                gap: 0.4rem;
+            }
+            .tab-btn {
+                padding: 0.45rem 0.85rem;
+                font-size: 0.8rem;
+            }
+
+            .video-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .card-body { padding: 0.9rem; }
+            .video-title { font-size: 0.92rem; }
+        }
+
+        @media (max-width: 480px) {
+            .logo-title { font-size: 1.25rem; }
+            .logo-icon { font-size: 1.6rem; }
+            .badge-wasm { font-size: 0.6rem; padding: 0.15rem 0.4rem; }
+            .user-kw-chips { gap: 0.35rem; }
+            .user-chip { font-size: 0.75rem; padding: 0.22rem 0.6rem; }
         }
     </style>
 </head>
