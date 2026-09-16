@@ -19,3 +19,5 @@ dist/
 
 # Dotnet CLI cache
 Library/
+hobby_vectors.db
+.local/
