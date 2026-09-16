@@ -28,6 +28,22 @@ public class WasmVectorStore
     public async Task InitializeAsync()
     {
         if (_initialized) return;
+        await LoadInternalAsync(forceReload: false);
+    }
+
+    public async Task ReloadDataAsync()
+    {
+        await LoadInternalAsync(forceReload: true);
+    }
+
+    private async Task LoadInternalAsync(bool forceReload)
+    {
+        if (forceReload)
+        {
+            _videos.Clear();
+            _userKeywords.Clear();
+            _initialized = false;
+        }
 
         // 1. seed_videos.json 정적 데이터 로드
         try
