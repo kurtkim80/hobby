@@ -84,19 +84,28 @@
             </button>
         </div>
 
-        <!-- User Keywords Bar -->
+        <!-- User Keywords Bar (반응형 접기/펼치기 지원) -->
         <div class="user-keywords-bar">
-            <span class="user-kw-title">
-                ⭐ 내 관심 키워드 <span class="user-kw-subtitle">(종합 수집 시 자동 연동)</span>:
-            </span>
-            <div class="user-kw-chips">
+            <div class="user-kw-header">
+                <span class="user-kw-title">
+                    ⭐ 내 관심 키워드 <span class="user-kw-count">(@userKeywords.Count)</span>
+                </span>
+                @if (userKeywords.Count > 8)
+                {
+                    <button class="btn-kw-toggle" @onclick="() => isKeywordsExpanded = !isKeywordsExpanded">
+                        @(isKeywordsExpanded ? "▲ 접기" : $"▼ +{userKeywords.Count - 8}개 더보기")
+                    </button>
+                }
+            </div>
+            <div class="user-kw-chips @(isKeywordsExpanded ? "expanded" : "collapsed")">
                 @if (userKeywords.Count == 0)
                 {
-                    <span style="color: #64748b; font-size: 0.8rem;">검색하면 여기에 자동 저장됩니다</span>
+                    <span class="kw-empty-hint">검색어를 입력하면 여기에 자동으로 태그가 저장됩니다</span>
                 }
                 else
                 {
-                    @foreach (var k in userKeywords)
+                    var visibleKws = isKeywordsExpanded ? userKeywords : userKeywords.Take(8);
+                    @foreach (var k in visibleKws)
                     {
                         <span class="trend-chip user-chip">
                             <span class="chip-text" @onclick="() => SearchKeyword(k.Keyword)">#@k.Keyword</span>
@@ -176,6 +185,7 @@
     private int selectedDays = 30;
     private bool isLoading = true;
     private bool isCollecting = false;
+    private bool isKeywordsExpanded = false;
     private int totalVideoCount = 0;
     private string statusMessage = "";
 
