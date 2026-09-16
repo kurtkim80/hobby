@@ -74,46 +74,71 @@ public class WasmCollectorService
     }
 
     /// <summary>
-    /// 특정 키워드로 유튜브 실시간 최신 영상 수집 (CORS 프록시 통과)
+    /// 특정 키워드로 유튜브 실시간 최신 영상 수집 (CORS 지원 Invidious 공개 API 활용)
     /// </summary>
     public async Task<List<VideoItem>> SearchYouTubeVideosAsync(string query, string category, int limit = 15)
     {
         var results = new List<VideoItem>();
-        string targetUrl = $"https://www.youtube.com/results?search_query={Uri.EscapeDataString(query)}&sp=CAISAhAB";
-        string proxyUrl = CorsProxyPrefix + Uri.EscapeDataString(targetUrl);
 
-        try
+        // 브라우저에서 CORS가 허용되고 정상 응답하는 인스턴스 목록
+        string[] searchEndpoints = [
+            "https://invidious.f5.si",
+            "https://invidious.ducks.party"
+        ];
+
+        foreach (var endpoint in searchEndpoints)
         {
-            string html = await _httpClient.GetStringAsync(proxyUrl);
-
-            var videoIdMatches = Regex.Matches(html, @"\""videoId\""\s*:\s*\""([a-zA-Z0-9_-]{11})\""");
-            var titleMatches = Regex.Matches(html, @"\""title\""\s*:\s*\{\s*\""runs\""\s*:\s*\[\s*\{\s*\""text\""\s*:\s*\""(.*?)\""");
-
-            var seenIds = new HashSet<string>();
-
-            for (int i = 0; i < videoIdMatches.Count && results.Count < limit; i++)
+            try
             {
-                string id = videoIdMatches[i].Groups[1].Value;
-                if (!seenIds.Add(id)) continue;
+                string url = $"{endpoint}/api/v1/search?q={Uri.EscapeDataString(query)}&type=video";
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                var json = await _httpClient.GetStringAsync(url, cts.Token);
 
-                string title = (i < titleMatches.Count) ? titleMatches[i].Groups[1].Value : $"{query} 관련 영상";
-                title = Regex.Unescape(title);
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind != System.Text.Json.JsonValueKind.Array)
+                    continue;
 
-                results.Add(new VideoItem
+                foreach (var item in doc.RootElement.EnumerateArray())
                 {
-                    Id = id,
-                    Title = title,
-                    ChannelTitle = query,
-                    Category = category,
-                    Url = $"https://www.youtube.com/watch?v={id}",
-                    PublishedAt = DateTime.UtcNow.AddHours(-1 * (i + 1)),
-                    Description = $"YouTube 검색: {query}"
-                });
+                    if (results.Count >= limit) break;
+
+                    string videoId = item.TryGetProperty("videoId", out var vidProp) ? vidProp.GetString() ?? "" : "";
+                    if (string.IsNullOrEmpty(videoId) || videoId.Length != 11) continue;
+
+                    string title = item.TryGetProperty("title", out var titleProp) ? titleProp.GetString() ?? query : query;
+                    string channelName = item.TryGetProperty("author", out var chProp) ? chProp.GetString() ?? "" : "";
+                    string description = item.TryGetProperty("description", out var descProp) ? descProp.GetString() ?? "" : "";
+                    long publishedUnix = item.TryGetProperty("published", out var pubProp) ? pubProp.GetInt64() : 0;
+
+                    DateTime publishedAt = publishedUnix > 0
+                        ? DateTimeOffset.FromUnixTimeSeconds(publishedUnix).UtcDateTime
+                        : DateTime.UtcNow;
+
+                    if (description.Length > 200) description = description[..200];
+                    if (string.IsNullOrEmpty(description)) description = $"{query} 관련 유튜브 영상";
+
+                    results.Add(new VideoItem
+                    {
+                        Id = videoId,
+                        Title = title,
+                        ChannelTitle = string.IsNullOrEmpty(channelName) ? query : channelName,
+                        Category = category,
+                        Url = $"https://www.youtube.com/watch?v={videoId}",
+                        PublishedAt = publishedAt,
+                        Description = description
+                    });
+                }
+
+                if (results.Count > 0)
+                {
+                    Console.WriteLine($"[WASM] {endpoint} 에서 '{query}' {results.Count}개 수집 성공");
+                    break;
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[WASM] 검색 수집 실패: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WASM] {endpoint} 검색 실패: {ex.Message}");
+            }
         }
 
         return results;

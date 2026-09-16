@@ -213,7 +213,11 @@
         else
         {
             var searchResults = await VectorStore.SearchAsync(searchQuery, topK: 50, categoryFilter: selectedCategory);
-            displayVideos = searchResults.Where(r => r.Video.PublishedAt >= cutoff).Select(r => (r.Video, r.Similarity)).ToList();
+            // 유사도가 0.2(20%) 이상이거나 검색어가 제목에 포함된 관련성 높은 영상만 필터링
+            displayVideos = searchResults
+                .Where(r => r.Video.PublishedAt >= cutoff && (r.Similarity >= 0.20f || r.Video.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)))
+                .Select(r => (r.Video, r.Similarity))
+                .ToList();
             statusMessage = $"🔍 \"{searchQuery}\" 시맨틱 AI 검색 결과: {displayVideos.Count}개";
         }
         isLoading = false;
@@ -311,7 +315,7 @@
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", $"ℹ️ 브라우저 웹 스크래핑으로 새로운 영상을 가져오지 못했습니다.\n(유튜브의 봇 보안 차단 정책 때문일 수 있습니다.)\n\n대신 6시간마다 동작하는 [GitHub Actions 자동 수집기]에 채널이 등록되어 있으므로 상단의 [🔄 최신 데이터 동기화]를 누르시면 공식 피드의 최신 영상을 즉시 가져옵니다!");
+                await JS.InvokeVoidAsync("alert", $"ℹ️ \"{searchQuery}\" 관련 영상을 유튜브 검색에서 찾지 못했습니다.\n(유튜브 서버 응답 지연일 수 있으니 잠시 후 다시 시도해보세요.)");
             }
             await LoadDataAsync();
         }
