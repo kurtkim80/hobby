@@ -66,14 +66,21 @@
                 <input 
                     type="text" 
                     class="search-input" 
-                    placeholder="자연어 시맨틱 AI 검색 (예: 스티브 바이 기타 솔로, 유재석 땡처리, M4 맥, ASL 결승, 홍구, 홍인규)" 
+                    placeholder="검색어 입력 후 [검색] 또는 엔터 (예: 놀면 뭐하니, 홍구, 홍인규, 핑계고, 스티브 바이, 맥)" 
                     @bind="searchQuery" 
                     @bind:event="oninput"
                     @onkeydown="HandleKeyDown"
                 />
+                @if (!string.IsNullOrEmpty(searchQuery))
+                {
+                    <button class="btn-clear" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.1rem;padding:0 0.5rem;" @onclick="ClearSearch">✕</button>
+                }
             </div>
+            <button class="btn-collect" style="background: #2563eb;" @onclick="ExecuteSearch">
+                <span>🔍 검색</span>
+            </button>
             <button class="btn-collect btn-kw-collect" @onclick="TriggerKeywordCollect" disabled="@isCollecting">
-                <span>⚡ 이 키워드로 즉시 수집</span>
+                <span>⚡ 웹에서 추가수집</span>
             </button>
         </div>
 
@@ -219,16 +226,27 @@
         StateHasChanged();
     }
 
+    private async Task ExecuteSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            await VectorStore.SaveUserKeywordAsync(searchQuery, selectedCategory);
+            userKeywords = await VectorStore.GetUserKeywordsAsync();
+        }
+        await LoadDataAsync();
+    }
+
+    private async Task ClearSearch()
+    {
+        searchQuery = "";
+        await LoadDataAsync();
+    }
+
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
-            if (!string.IsNullOrWhiteSpace(searchQuery))
-            {
-                await VectorStore.SaveUserKeywordAsync(searchQuery, selectedCategory);
-                userKeywords = await VectorStore.GetUserKeywordsAsync();
-            }
-            await LoadDataAsync();
+            await ExecuteSearch();
         }
     }
 
@@ -287,12 +305,19 @@
 
             var fetched = await Collector.SearchYouTubeVideosAsync(searchQuery, cat, limit: 15);
             int saved = await VectorStore.SaveVideosAsync(fetched);
-            await JS.InvokeVoidAsync("alert", $"⚡ 키워드 수집 완료: \"{searchQuery}\" 관련 {saved}개 영상이 로컬 벡터 DB에 추가되었습니다!");
+            if (saved > 0)
+            {
+                await JS.InvokeVoidAsync("alert", $"⚡ 키워드 수집 완료: \"{searchQuery}\" 관련 {saved}개 영상이 로컬 벡터 DB에 추가되었습니다!");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", $"ℹ️ 브라우저 웹 스크래핑으로 새로운 영상을 가져오지 못했습니다.\n(유튜브의 봇 보안 차단 정책 때문일 수 있습니다.)\n\n대신 6시간마다 동작하는 [GitHub Actions 자동 수집기]에 채널이 등록되어 있으므로 상단의 [🔄 최신 데이터 동기화]를 누르시면 공식 피드의 최신 영상을 즉시 가져옵니다!");
+            }
             await LoadDataAsync();
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"수집 실패: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", $"수집 안내: 브라우저 직접 수집에 제약이 발생했습니다 ({ex.Message}). 상단의 [🔄 최신 데이터 동기화] 버튼을 이용해주세요.");
         }
         finally
         {

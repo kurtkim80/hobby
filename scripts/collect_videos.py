@@ -13,6 +13,7 @@ CHANNELS = [
     # 📺 TV 예능 & 코미디
     {"category": "📺 TV 예능 & 코미디", "channel_name": "홍인규 게임TV", "channel_id": "UC543-TDm6IvHHZXwdSFioMw"},
     {"category": "📺 TV 예능 & 코미디", "channel_name": "뜬뜬(핑계고)", "channel_id": "UCDNvRZRgvkBTUkQzFoT_8rA"},
+    {"category": "📺 TV 예능 & 코미디", "channel_name": "놀면 뭐하니?", "channel_id": "UCx6jsZ02B4K3SECUrkgPyzg"},
     # 🎸 기타 & 락/메탈
     {"category": "🎸 기타 & 락/메탈", "channel_name": "Steve Vai", "channel_id": "UCdkBa5GZKEAfiTjqfqotWhQ"},
     {"category": "🎸 기타 & 락/메탈", "channel_name": "Rick Beato", "channel_id": "UCJquYOG5EL82sKTfH9aMA9Q"},
