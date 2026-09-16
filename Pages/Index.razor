@@ -119,11 +119,15 @@
         <!-- Category Filter Tabs -->
         <div class="category-tabs">
             <button class="tab-btn @(selectedCategory == null ? "active" : "")" @onclick="@(() => SelectCategory(null))">전체</button>
-            <button class="tab-btn @(selectedCategory == CatGuitar ? "active" : "")" @onclick="@(() => SelectCategory(CatGuitar))">🎸 기타 & 락/메탈</button>
+            <button class="tab-btn @(selectedCategory == CatGuitar ? "active" : "")" @onclick="@(() => SelectCategory(CatGuitar))">🎸 기타 & 락</button>
             <button class="tab-btn @(selectedCategory == CatTech ? "active" : "")" @onclick="@(() => SelectCategory(CatTech))">🍎 Mac & 테크</button>
             <button class="tab-btn @(selectedCategory == CatStar ? "active" : "")" @onclick="@(() => SelectCategory(CatStar))">🎮 스타크래프트</button>
             <button class="tab-btn @(selectedCategory == CatTv ? "active" : "")" @onclick="@(() => SelectCategory(CatTv))">📺 TV 예능</button>
             <button class="tab-btn @(selectedCategory == CatAi ? "active" : "")" @onclick="@(() => SelectCategory(CatAi))">🤖 AI & 로봇</button>
+            <button class="tab-btn @(selectedCategory == CatDev ? "active" : "")" @onclick="@(() => SelectCategory(CatDev))">💻 개발 & 코딩</button>
+            <button class="tab-btn @(selectedCategory == CatMovie ? "active" : "")" @onclick="@(() => SelectCategory(CatMovie))">🎬 영화 & 리뷰</button>
+            <button class="tab-btn @(selectedCategory == CatScience ? "active" : "")" @onclick="@(() => SelectCategory(CatScience))">🔬 과학 & 지식</button>
+            <button class="tab-btn @(selectedCategory == CatStreamer ? "active" : "")" @onclick="@(() => SelectCategory(CatStreamer))">🕹️ 게임 & 스트리머</button>
         </div>
 
         <!-- Stats Bar -->
@@ -194,6 +198,10 @@
     private const string CatStar = "🎮 스타크래프트";
     private const string CatTv = "📺 TV 예능 & 코미디";
     private const string CatAi = "🤖 AI & 로봇";
+    private const string CatDev = "💻 개발 & 프로그래밍";
+    private const string CatMovie = "🎬 영화 & 리뷰";
+    private const string CatScience = "🔬 과학 & 지식";
+    private const string CatStreamer = "🕹️ 게임 & 스트리머";
 
     private List<TrendingTopic> trendingTopics = [];
     private List<UserKeywordItem> userKeywords = [];

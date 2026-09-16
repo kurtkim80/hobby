@@ -8,20 +8,32 @@ SEED_FILE = "wwwroot/data/seed_videos.json"
 
 # 검증된 실제 YouTube 채널 ID 목록
 CHANNELS = [
-    # 🎮 스타크래프트
-    {"category": "🎮 스타크래프트", "channel_name": "액션홍구", "channel_id": "UCaNGiz6D2vHP7XLj9d5691A"},
-    # 📺 TV 예능 & 코미디
-    {"category": "📺 TV 예능 & 코미디", "channel_name": "홍인규 게임TV", "channel_id": "UC543-TDm6IvHHZXwdSFioMw"},
-    {"category": "📺 TV 예능 & 코미디", "channel_name": "뜬뜬(핑계고)", "channel_id": "UCDNvRZRgvkBTUkQzFoT_8rA"},
-    {"category": "📺 TV 예능 & 코미디", "channel_name": "놀면 뭐하니?", "channel_id": "UCx6jsZ02B4K3SECUrkgPyzg"},
     # 🎸 기타 & 락/메탈
     {"category": "🎸 기타 & 락/메탈", "channel_name": "Steve Vai", "channel_id": "UCdkBa5GZKEAfiTjqfqotWhQ"},
     {"category": "🎸 기타 & 락/메탈", "channel_name": "Rick Beato", "channel_id": "UCJquYOG5EL82sKTfH9aMA9Q"},
     {"category": "🎸 기타 & 락/메탈", "channel_name": "Bernth", "channel_id": "UCZvo8TZtUZkLgiH3rJsj-Ow"},
     # 🍎 Mac & 테크
+    {"category": "🍎 Mac & 테크", "channel_name": "ITSub잇섭", "channel_id": "UCdUcjkyZtf-1WJyPPiETF1g"},
     {"category": "🍎 Mac & 테크", "channel_name": "퀘이사존", "channel_id": "UC17_4RLogNieDO33smNlcWw"},
+    # 🎮 스타크래프트
+    {"category": "🎮 스타크래프트", "channel_name": "액션홍구", "channel_id": "UCaNGiz6D2vHP7XLj9d5691A"},
+    {"category": "🎮 스타크래프트", "channel_name": "이영호FlaSh", "channel_id": "UC4TDU9SEVB0EgslnTI2O9IQ"},
+    {"category": "🎮 스타크래프트", "channel_name": "택신TV [김택용]", "channel_id": "UCBa9U1nh3fe2lBx3a0R0Skg"},
+    # 📺 TV 예능 & 코미디
+    {"category": "📺 TV 예능 & 코미디", "channel_name": "홍인규 게임TV", "channel_id": "UC543-TDm6IvHHZXwdSFioMw"},
+    {"category": "📺 TV 예능 & 코미디", "channel_name": "뜬뜬(핑계고)", "channel_id": "UCDNvRZRgvkBTUkQzFoT_8rA"},
+    {"category": "📺 TV 예능 & 코미디", "channel_name": "놀면 뭐하니?", "channel_id": "UCx6jsZ02B4K3SECUrkgPyzg"},
     # 🤖 AI & 로봇
-    {"category": "🤖 AI & 로봇", "channel_name": "Boston Dynamics", "channel_id": "UC7vVhkEfw4nOGp8TyDk7RcQ"}
+    {"category": "🤖 AI & 로봇", "channel_name": "Boston Dynamics", "channel_id": "UC7vVhkEfw4nOGp8TyDk7RcQ"},
+    # 💻 개발 & 프로그래밍
+    {"category": "💻 개발 & 프로그래밍", "channel_name": "조코딩", "channel_id": "UCQNE2JmbasNYbjGAcuBiRRg"},
+    {"category": "💻 개발 & 프로그래밍", "channel_name": "노마드코더", "channel_id": "UCUpJs89fSBXNolQGOYKn0YQ"},
+    # 🎬 영화 & 리뷰
+    {"category": "🎬 영화 & 리뷰", "channel_name": "지무비", "channel_id": "UCaHGOzOyeYzLQeKsVkfLEGA"},
+    # 🔬 과학 & 지식
+    {"category": "🔬 과학 & 지식", "channel_name": "안될과학", "channel_id": "UCMc4EmuDxnHPc6pgGW-QWvQ"},
+    # 🕹️ 게임 & 스트리머
+    {"category": "🕹️ 게임 & 스트리머", "channel_name": "침착맨", "channel_id": "UCUj6rrhMTR9pipbAWBAMvUQ"}
 ]
 
 ssl_context = ssl.create_default_context()
