@@ -177,6 +177,36 @@ public class WasmVectorStore
         return q.OrderByDescending(v => v.PublishedAt).Take(limit).ToList();
     }
 
+    public async Task<DateTime?> GetLastPublishedTimeAsync()
+    {
+        await InitializeAsync();
+        return _videos.Count > 0 ? _videos.Max(v => v.PublishedAt) : null;
+    }
+
+    public async Task<DateTime?> GetLastSyncTimeAsync()
+    {
+        await InitializeAsync();
+        try
+        {
+            string? syncStr = await _js.InvokeAsync<string?>("localStorage.getItem", "hobby_last_sync_time");
+            if (!string.IsNullOrEmpty(syncStr) && DateTime.TryParse(syncStr, out var dt))
+            {
+                return dt;
+            }
+        }
+        catch { }
+        return null;
+    }
+
+    public async Task RecordSyncTimeAsync()
+    {
+        try
+        {
+            await _js.InvokeVoidAsync("localStorage.setItem", "hobby_last_sync_time", DateTime.UtcNow.ToString("o"));
+        }
+        catch { }
+    }
+
     public async Task<Dictionary<string, int>> GetStatisticsAsync()
     {
         await InitializeAsync();

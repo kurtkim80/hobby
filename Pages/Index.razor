@@ -133,6 +133,18 @@
         <!-- Stats Bar -->
         <div class="stats-bar">
             <span class="stat-badge">📦 총 보관 콘텐츠: @totalVideoCount 개</span>
+            @if (lastSyncTime.HasValue)
+            {
+                <span class="stat-badge stat-time" title="내 브라우저와 동기화/수집한 시간">
+                    🔄 마지막 동기화: @lastSyncTime.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                </span>
+            }
+            @if (lastVideoTime.HasValue)
+            {
+                <span class="stat-badge stat-time" title="보관된 영상 중 가장 최근 발행일시">
+                    🎬 최신 영상 발행: @lastVideoTime.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                </span>
+            }
             @if (!string.IsNullOrEmpty(statusMessage))
             {
                 <span class="status-msg">@statusMessage</span>
@@ -192,6 +204,8 @@
     private bool isKeywordsExpanded = false;
     private int totalVideoCount = 0;
     private string statusMessage = "";
+    private DateTime? lastSyncTime = null;
+    private DateTime? lastVideoTime = null;
 
     private const string CatGuitar = "🎸 기타 & 락/메탈";
     private const string CatTech = "🍎 Mac & 테크";
@@ -210,6 +224,12 @@
     protected override async Task OnInitializedAsync()
     {
         await VectorStore.InitializeAsync();
+        lastSyncTime = await VectorStore.GetLastSyncTimeAsync();
+        if (!lastSyncTime.HasValue)
+        {
+            await VectorStore.RecordSyncTimeAsync();
+            lastSyncTime = await VectorStore.GetLastSyncTimeAsync();
+        }
         await LoadDataAsync();
         _ = LoadTrendsAsync();
     }
@@ -220,6 +240,8 @@
         userKeywords = await VectorStore.GetUserKeywordsAsync();
         var stats = await VectorStore.GetStatisticsAsync();
         totalVideoCount = stats.Values.Sum();
+        lastVideoTime = await VectorStore.GetLastPublishedTimeAsync();
+        lastSyncTime ??= await VectorStore.GetLastSyncTimeAsync();
 
         var cutoff = DateTime.UtcNow.AddDays(-selectedDays);
         if (string.IsNullOrWhiteSpace(searchQuery))
@@ -306,6 +328,8 @@
         isLoading = true;
         statusMessage = "🔄 깃허브 최신 데이터 동기화 중...";
         await VectorStore.ReloadDataAsync();
+        await VectorStore.RecordSyncTimeAsync();
+        lastSyncTime = await VectorStore.GetLastSyncTimeAsync();
         await LoadDataAsync();
         await JS.InvokeVoidAsync("alert", $"✅ 최신 데이터 동기화 완료! 현재 총 {totalVideoCount}개 영상이 로드되었습니다.");
     }
@@ -329,6 +353,8 @@
             int saved = await VectorStore.SaveVideosAsync(fetched);
             if (saved > 0)
             {
+                await VectorStore.RecordSyncTimeAsync();
+                lastSyncTime = await VectorStore.GetLastSyncTimeAsync();
                 await JS.InvokeVoidAsync("alert", $"⚡ 키워드 수집 완료: \"{searchQuery}\" 관련 {saved}개 영상이 로컬 벡터 DB에 추가되었습니다!");
             }
             else
@@ -378,6 +404,12 @@
                 var videos = await Collector.SearchYouTubeVideosAsync(q, cat, limit: 10);
                 int added = await VectorStore.SaveVideosAsync(videos);
                 totalAdded += added;
+            }
+
+            if (totalAdded > 0)
+            {
+                await VectorStore.RecordSyncTimeAsync();
+                lastSyncTime = await VectorStore.GetLastSyncTimeAsync();
             }
 
             await JS.InvokeVoidAsync("alert", $"🚀 종합 대량 수집 완료: 신규 콘텐츠 {totalAdded}개가 로컬 벡터 DB에 저장되었습니다!");
