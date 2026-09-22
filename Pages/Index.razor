@@ -145,6 +145,12 @@
                     🎬 최신 영상 발행: @lastVideoTime.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
                 </span>
             }
+            @if (deletedVideoCount > 0)
+            {
+                <button class="stat-badge btn-restore-badge" @onclick="RestoreDeletedVideos" title="숨긴 영상을 모두 복원합니다">
+                    🗑️ 숨긴 영상: @deletedVideoCount 개 (클릭 시 복원)
+                </button>
+            }
             @if (!string.IsNullOrEmpty(statusMessage))
             {
                 <span class="status-msg">@statusMessage</span>
@@ -172,24 +178,29 @@
         {
             @foreach (var item in displayVideos)
             {
-                <a href="@item.Video.Url" target="_blank" class="video-card">
-                    <div class="thumbnail-wrapper">
-                        <img class="thumbnail-img" src="@item.Video.ThumbnailUrl" alt="@item.Video.Title" loading="lazy" onerror="this.src='https://via.placeholder.com/320x180/1e293b/ffffff?text=Video'" />
-                        <div class="category-badge">@item.Video.Category</div>
-                        @if (item.Similarity > 0)
-                        {
-                            <div class="similarity-badge">🎯 유사도 @((item.Similarity * 100).ToString("F1"))%</div>
-                        }
-                    </div>
-                    <div class="card-body">
-                        <div class="channel-name">@item.Video.ChannelTitle</div>
-                        <div class="video-title" title="@item.Video.Title">@item.Video.Title</div>
-                        <div class="card-footer">
-                            <span>📅 @item.Video.PublishedAt.ToString("yyyy-MM-dd")</span>
-                            <span class="play-link">유튜브 재생 ↗</span>
+                <div class="video-card-wrapper" style="position: relative;">
+                    <a href="@item.Video.Url" target="_blank" class="video-card">
+                        <div class="thumbnail-wrapper">
+                            <img class="thumbnail-img" src="@item.Video.ThumbnailUrl" alt="@item.Video.Title" loading="lazy" onerror="this.src='https://via.placeholder.com/320x180/1e293b/ffffff?text=Video'" />
+                            <div class="category-badge">@item.Video.Category</div>
+                            @if (item.Similarity > 0)
+                            {
+                                <div class="similarity-badge">🎯 유사도 @((item.Similarity * 100).ToString("F1"))%</div>
+                            }
                         </div>
-                    </div>
-                </a>
+                        <div class="card-body">
+                            <div class="channel-name">@item.Video.ChannelTitle</div>
+                            <div class="video-title" title="@item.Video.Title">@item.Video.Title</div>
+                            <div class="card-footer">
+                                <span>📅 @item.Video.PublishedAt.ToString("yyyy-MM-dd")</span>
+                                <span class="play-link">유튜브 재생 ↗</span>
+                            </div>
+                        </div>
+                    </a>
+                    <button class="btn-delete-video" title="이 영상 목록에서 삭제(숨기기)" @onclick:stopPropagation="true" @onclick="() => DeleteVideo(item.Video.Id, item.Video.Title)">
+                        ✕
+                    </button>
+                </div>
             }
         }
     </section>
@@ -203,6 +214,7 @@
     private bool isCollecting = false;
     private bool isKeywordsExpanded = false;
     private int totalVideoCount = 0;
+    private int deletedVideoCount = 0;
     private string statusMessage = "";
     private DateTime? lastSyncTime = null;
     private DateTime? lastVideoTime = null;
@@ -240,6 +252,7 @@
         userKeywords = await VectorStore.GetUserKeywordsAsync();
         var stats = await VectorStore.GetStatisticsAsync();
         totalVideoCount = stats.Values.Sum();
+        deletedVideoCount = await VectorStore.GetDeletedCountAsync();
         lastVideoTime = await VectorStore.GetLastPublishedTimeAsync();
         lastSyncTime ??= await VectorStore.GetLastSyncTimeAsync();
 
@@ -306,6 +319,29 @@
     {
         await VectorStore.DeleteUserKeywordAsync(keyword);
         userKeywords = await VectorStore.GetUserKeywordsAsync();
+    }
+
+    private async Task DeleteVideo(string videoId, string title)
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", $"이 영상을 목록에서 삭제하시겠습니까?\n\n\"{title}\"");
+        if (!confirmed) return;
+
+        bool success = await VectorStore.DeleteVideoAsync(videoId);
+        if (success)
+        {
+            await LoadDataAsync();
+        }
+    }
+
+    private async Task RestoreDeletedVideos()
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", $"숨긴 영상 {deletedVideoCount}개를 모두 다시 복원하시겠습니까?");
+        if (!confirmed) return;
+
+        isLoading = true;
+        await VectorStore.RestoreAllDeletedVideosAsync();
+        await LoadDataAsync();
+        await JS.InvokeVoidAsync("alert", "✅ 숨긴 영상이 모두 정상적으로 복원되었습니다!");
     }
 
     private async Task SelectCategory(string? category)

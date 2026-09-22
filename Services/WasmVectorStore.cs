@@ -17,6 +17,8 @@ public class WasmVectorStore
 
     private const string LocalStorageKeyVideos = "hobby_custom_videos";
     private const string LocalStorageKeyKeywords = "hobby_user_keywords";
+    private const string LocalStorageKeyDeletedVideos = "hobby_deleted_video_ids";
+    private readonly HashSet<string> _deletedVideoIds = [];
 
     public WasmVectorStore(HttpClient http, IJSRuntime js, LocalEmbeddingService embedder)
     {
@@ -42,8 +44,24 @@ public class WasmVectorStore
         {
             _videos.Clear();
             _userKeywords.Clear();
+            _deletedVideoIds.Clear();
             _initialized = false;
         }
+
+        // 0. 삭제된 영상 ID 로드
+        try
+        {
+            string? deletedJson = await _js.InvokeAsync<string?>("localStorage.getItem", LocalStorageKeyDeletedVideos);
+            if (!string.IsNullOrEmpty(deletedJson))
+            {
+                var deletedList = JsonSerializer.Deserialize<List<string>>(deletedJson);
+                if (deletedList != null)
+                {
+                    foreach (var id in deletedList) _deletedVideoIds.Add(id);
+                }
+            }
+        }
+        catch { }
 
         // 1. seed_videos.json 정적 데이터 로드
         try
@@ -53,6 +71,7 @@ public class WasmVectorStore
             {
                 foreach (var v in seeds)
                 {
+                    if (_deletedVideoIds.Contains(v.Id)) continue;
                     v.Embedding = _embedder.GenerateEmbedding(v.ToEmbeddingText());
                     _videos.Add(v);
                 }
@@ -74,6 +93,7 @@ public class WasmVectorStore
                 {
                     foreach (var c in customs)
                     {
+                        if (_deletedVideoIds.Contains(c.Id)) continue;
                         if (!_videos.Any(v => v.Id == c.Id))
                         {
                             c.Embedding = _embedder.GenerateEmbedding(c.ToEmbeddingText());
@@ -111,6 +131,7 @@ public class WasmVectorStore
 
         foreach (var item in items)
         {
+            if (_deletedVideoIds.Contains(item.Id)) continue;
             if (!_videos.Any(v => v.Id == item.Id))
             {
                 item.Embedding = _embedder.GenerateEmbedding(item.ToEmbeddingText());
@@ -266,5 +287,50 @@ public class WasmVectorStore
             return true;
         }
         return false;
+    }
+
+    public async Task<bool> DeleteVideoAsync(string videoId)
+    {
+        await InitializeAsync();
+        int removed = _videos.RemoveAll(v => v.Id == videoId);
+        _deletedVideoIds.Add(videoId);
+
+        try
+        {
+            await _js.InvokeVoidAsync("localStorage.setItem", LocalStorageKeyDeletedVideos, JsonSerializer.Serialize(_deletedVideoIds.ToList()));
+
+            // 커스텀 수집 목록에서도 제거
+            string? customJson = await _js.InvokeAsync<string?>("localStorage.getItem", LocalStorageKeyVideos);
+            if (!string.IsNullOrEmpty(customJson))
+            {
+                var customs = JsonSerializer.Deserialize<List<VideoItem>>(customJson);
+                if (customs != null)
+                {
+                    customs.RemoveAll(v => v.Id == videoId);
+                    await _js.InvokeVoidAsync("localStorage.setItem", LocalStorageKeyVideos, JsonSerializer.Serialize(customs));
+                }
+            }
+        }
+        catch { }
+
+        return removed > 0;
+    }
+
+    public async Task<int> GetDeletedCountAsync()
+    {
+        await InitializeAsync();
+        return _deletedVideoIds.Count;
+    }
+
+    public async Task RestoreAllDeletedVideosAsync()
+    {
+        await InitializeAsync();
+        _deletedVideoIds.Clear();
+        try
+        {
+            await _js.InvokeVoidAsync("localStorage.removeItem", LocalStorageKeyDeletedVideos);
+        }
+        catch { }
+        await ReloadDataAsync();
     }
 }
