@@ -1,5 +1,41 @@
 [
   {
+    "Id": "jDMOGRGVRPA",
+    "Title": "원래 사케 마시면 한번에 훅 가나요..?",
+    "ChannelTitle": "액션홍구",
+    "Category": "🎮 스타크래프트",
+    "Url": "https://www.youtube.com/watch?v=jDMOGRGVRPA",
+    "PublishedAt": "2026-10-25T13:19:26+00:00",
+    "Description": "구독과 좋아요는 저희에게 큰 힘이 됩니다!\n구독 :: https://bit.ly/2ICyJOt\n\n각종 문의는? hong9@goodworklab.co.kr\n\n아프리카 방송국 :: http://afreecatv.com/dpfgc3\n\n홍구 하이라이트 :: https://bit.ly/2KtGviJ\n스타크래프트 모음 :: https://bit.ly/2KjXkxl\n먹"
+  },
+  {
+    "Id": "2dbCeyC-WFw",
+    "Title": "IT뉴스 - KIMI K3 미쳤다, 대규모 AI 해킹, GPU 해킹, Claude Duet, 스마트폰 Agent, 이미지, 영상 API 가격 경쟁, Dessa 등",
+    "ChannelTitle": "조코딩",
+    "Category": "💻 개발 & 프로그래밍",
+    "Url": "https://www.youtube.com/watch?v=2dbCeyC-WFw",
+    "PublishedAt": "2026-10-25T11:46:23+00:00",
+    "Description": "IT뉴스 - KIMI K3 미쳤다, 대규모 AI 해킹, GPU 해킹, Claude Duet, 스마트폰 Agent, 이미지, 영상 API 가격 경쟁, Dessa 등"
+  },
+  {
+    "Id": "sPquQMGPFQI",
+    "Title": "[CSL시즌2] 기영vsSOOP🔥이윤열을 지켜라!",
+    "ChannelTitle": "홍인규 게임TV",
+    "Category": "📺 TV 예능 & 코미디",
+    "Url": "https://www.youtube.com/watch?v=sPquQMGPFQI",
+    "PublishedAt": "2026-10-25T11:30:36+00:00",
+    "Description": "#이윤열 #박성준 #장기영 #최하니 #정명훈 #케리건메이 #강민 #이동진 #스타빨무 #빠른무한 #스타크래프트 #연예인스타리그 #CSL #기영이숯불치킨 #SOOP #하이퍼엑스 #HyperX #하이퍼X\n\n@nadaup @웃고리즘 @공치는명훈이 @julyzerg12 @최하니soonhani @kerriganmay @nalra \n\n📺 라이브 방송 안내 :\n▷ 정규리"
+  },
+  {
+    "Id": "SW_GIdnmc1c",
+    "Title": "HyperX배 연예인 스타리그 시즌2🔥 9회차 3경기 SOOP 수퍼즈 vs 기영이숯불 킹즈 | 3대3 팀전",
+    "ChannelTitle": "홍인규 게임TV",
+    "Category": "📺 TV 예능 & 코미디",
+    "Url": "https://www.youtube.com/watch?v=SW_GIdnmc1c",
+    "PublishedAt": "2026-10-25T11:00:09+00:00",
+    "Description": "전 프로게이머 감독과 연예인·크리에이터 선수가 한 팀을 이루어 승부를 펼치는 HyperX배 연예인 스타리그 CSL 시즌2🔥\n\n📺 라이브 풀버전 다시보기:\nhttps://youtube.com/live/CX9vlBlVokU\n\nCSL 시즌2 - 9회차 3경기 | 해설: 이동진 캐스터, 강민 감독\nSOOP 수퍼즈(박성준, 최하니, 케리건메이) vs 기영이숯불 킹즈"
+  },
+  {
     "Id": "DvBstqVC460",
     "Title": "방송인 서경석 '한국사 삼국통일전쟁 암기법' 특강",
     "ChannelTitle": "침착맨",
@@ -10,21 +46,12 @@
   },
   {
     "Id": "qP2pj1JI8J0",
-    "Title": "AI 에이전트가 코드 두 줄로 쌉가능? 👀",
+    "Title": "미친 프레임워크 등장 👀",
     "ChannelTitle": "노마드코더",
     "Category": "💻 개발 & 프로그래밍",
     "Url": "https://www.youtube.com/watch?v=qP2pj1JI8J0",
     "PublishedAt": "2026-10-25T09:01:51+00:00",
     "Description": "AI 에이전트가 코드 두 줄로 쌉가능? 👀\nReact처럼 훅으로 만드는 AI 에이전트 프레임워크, Flue를 소개합니다! \n메모리, DB, 도구, REST API부터 React UI 연결까지. \n직접 구현하느라 고생했던 기능들이 기본으로 들어있어요 🤯\n\n🔥 Flue 풀코스 → https://nomadcoders.co/flue-framework\n🚀 AX 스쿨"
-  },
-  {
-    "Id": "2dbCeyC-WFw",
-    "Title": "IT뉴스 - KIMI K3 미쳤다, 대규모 AI 해킹, GPU 해킹, Claude Duet, 스마트폰 Agent, 이미지, 영상 API 가격 경쟁, Dessa 등",
-    "ChannelTitle": "조코딩",
-    "Category": "💻 개발 & 프로그래밍",
-    "Url": "https://www.youtube.com/watch?v=2dbCeyC-WFw",
-    "PublishedAt": "2026-10-25T09:01:07+00:00",
-    "Description": "IT뉴스 - KIMI K3 미쳤다, 대규모 AI 해킹, GPU 해킹, Claude Duet, 스마트폰 Agent, 이미지, 영상 API 가격 경쟁, Dessa 등"
   },
   {
     "Id": "2BhY3kIrhe4",
